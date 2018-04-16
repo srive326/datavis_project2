@@ -1,0 +1,31 @@
+---
+title: "Datavis project2"
+author: "Stephanie"
+date: "4/16/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library('R.matlab')
+```
+
+## Reality Mining Predictability 
+
+Subject 10 considers themselves very predictable. I'll work to implment two visualizations on this subject to determine if their schedule is truly predictable or not. 
+
+```{r cars}
+#read in Matlab data
+s10data <- as.data.frame(t(s10data))
+colnames(s10data) <- c("Date", seq(1:24))
+start_date <- as.POSIXct((732200 - 719529)*86400, origin = "1970-01-01")
+end_date <- as.POSIXct((732339.905636574 - 719529)*86400, origin = "1970-01-01")
+```
+
+I need to perform data munging to replace the column values with dates.
+
+```{r}
+
+```
+
+
