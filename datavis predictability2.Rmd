@@ -49,53 +49,8 @@ probability <- total_home_friday/total_friday
 ```
 I should probably create a function to do these probabilities quickly and at once.. below I will work to create this function.
 
-```{r}
-#function to get the probability of being home on a friday for each hour in a day 
-
-
-func2 <- function(input_day) {
-    vr <- c() ### an empty vector 
-
-    for (i in 1:24) { 
-      
-        total_day <- sum(s10data$days == input_day)
-        total_instance <- sum(s10data$days == input_day & s10data[,i+1]== '1')
-        probability <- total_instance/total_day
-        
-        vr[i] <- probability
-        
-    }
-    vr
-}
-
-func2("Friday")
-
-```
 
 This function takes in the day of the week and the location we want to compute the probability for. 
-
-```{r}
-
-
-  
-func3 <- function(input_day, location) {
-    vr <- c() ### an empty vector 
-
-    for (i in 1:24) { 
-      
-        total_day <- sum(s10data$days == input_day)
-        total_instance <- sum(s10data$days == input_day & s10data[,i+1]== location)
-        probability <- total_instance/total_day
-        
-        vr[i] <- probability
-        
-    }
-    vr
-}
-
-func3("Friday","2")
-
-```
 
 
 ```{r}
@@ -128,9 +83,20 @@ hold <-func4("Monday","2")
 hold[3]
 ```
 
-
+I'm going to create a data from for the probability that the person is 1-home 2-work 3-elsewhere, below is the example for the probability the subject is at home 
 
 ```{r}
+
+d <- data.frame(matrix(nrow=7, ncol=24))
+
+for (i in 1:length(days_of_week)){
+  
+  d[i,] <- rbind(func4(days_of_week[i],"1"))
+  
+}
+
+rownames(d) <- days_of_week
+
 
 ```
 
