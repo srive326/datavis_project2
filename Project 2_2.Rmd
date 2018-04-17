@@ -24,7 +24,7 @@ install_load('ggplot2')
 
 
 
-loc <- readMat("/Users/stephanierivera/Documents/MATLAB/withdate.mat")
+loc <- readMat("data/withdate.mat")
 #1st column
 val <- loc[["withdate"]][[1]][,1]
 val <- as.POSIXct((val - 719529)*86400, origin = "1970-01-01")

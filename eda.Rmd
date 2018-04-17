@@ -1,0 +1,31 @@
+---
+title: "EDA"
+author: "Noah Johnson"
+date: "April 17, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(install.load)
+install_load('tidyverse')
+install_load('R.matlab')
+```
+
+## R Markdown
+
+```{r}
+# Translate the Matlab structure into R - WARNING: THIS TAKES A LONG TIME
+#data <- readMat("data/realitymining.mat")
+#save(data, file = "data/realitymining.Rda")
+```
+
+```{r}
+# Load full dataset
+load("data/realitymining.Rda")
+```
+
+```{r}
+data.str <- str(data)
+```

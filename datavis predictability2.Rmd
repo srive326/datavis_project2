@@ -7,8 +7,9 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library('R.matlab')
-library('plotly')
+library(install.load)
+install_load('R.matlab')
+install_load('plotly')
 ```
 
 ## Reality Mining Predictability 
