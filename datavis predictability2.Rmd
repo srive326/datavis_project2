@@ -147,6 +147,10 @@ heatmap(d3)
 
 
 heatmap_elsewhere <- heatmap(as.matrix(d3), Rowv=NA, Colv=NA, col = cm.colors(256),scale="none", margins=c(5,10))
+#confidence band, variance 
+#measure of standard error 
+#(time series)
+#narrative transition
 
 ```
 
