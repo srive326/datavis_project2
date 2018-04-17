@@ -6,10 +6,10 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-library('networkD3')
-library('R.matlab')
-library('ggplot2')
-
+library(install.load)
+install_load('networkD3')
+install_load('R.matlab')
+install_load('ggplot2')
 ```
 
 ## R Markdown
