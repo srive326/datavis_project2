@@ -1,6 +1,6 @@
 ---
 title: "Untitled"
-author: "Stephanie, Mike, Beau, Noah"
+author: "Stephanie, Noah"
 date: "3/26/2018"
 output: html_document
 ---
@@ -15,13 +15,9 @@ install_load('ggplot2')
 ## R Markdown
 
 
-
-
 ```{r}
 
 #sn_startdate <- readMat("")
-
-
 
 
 loc <- readMat("data/withdate.mat")

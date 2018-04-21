@@ -1,5 +1,5 @@
 ---
-title: "Datavis project2"
+title: "Data Visualization Project 2"
 author: "Stephanie"
 date: "4/16/2018"
 output: html_document
@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(install.load)
 install_load('R.matlab')
-install_load('plotly')
+#install_load('plotly')
 ```
 
 ## Reality Mining Predictability 
@@ -17,22 +17,26 @@ install_load('plotly')
 Subject 10 considers themselves very predictable. I'll work to implment two visualizations on this subject to determine if their schedule is truly predictable or not. 
 
 ```{r cars}
+HOME <- '1'
+WORK <- '2'
+ELSEWHERE <- '3'
+NO_SIGNAL <- '4'
+PHONE_OFF <- NaN
 
-s10data <- as.data.frame(t(s10data))
-colnames(s10data) <- c("Date", seq(1:24))
+load(file = "data/s10data.Rda")
+s10data <- as.data.frame(s10data)
+
+colnames(s10data) <- c("Date", as.character(1:24))
 rownames(s10data) <- c(seq(1:140))
-as.character(colnames(s10data))
+
 start_date <- as.POSIXct((732200 - 719529)*86400, origin = "1970-01-01")
 end_date <- as.POSIXct((732339.905636574 - 719529)*86400, origin = "1970-01-01")
 ```
 
 
-
 ```{r}
 s10data$Date <- as.Date(s10data$Date, format = "%m/%d/%Y")
-s10data$days <- weekdays(as.Date(s10data$Date))
-
-
+s10data$day <- weekdays(as.Date(s10data$Date))
 ```
 
 I need a new data frame where the probabilities are calculated in the cells. 
@@ -42,9 +46,9 @@ I need a new data frame where the probabilities are calculated in the cells.
 
 days_of_week <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
-total_friday <- sum(s10data$days == "Friday")
+total_friday <- sum(s10data$day == "Friday")
 
-total_home_friday <- sum(s10data$days == "Friday" & s10data$'24'=='1')
+total_home_friday <- sum(s10data$day == "Friday" & s10data$'24'==HOME)
 
 probability <- total_home_friday/total_friday
 
@@ -65,8 +69,8 @@ func4 <- function(input_day, location) {
     for (j in 1:length(input_day)){
         for (i in 1:24) { 
       
-        total_day <- sum(s10data$days == input_day)
-        total_instance <- sum(s10data$days == input_day & s10data[,i+1]== location)
+        total_day <- sum(s10data$day == input_day)
+        total_instance <- sum(s10data$day == input_day & s10data[,i+1]== location)
         probability <- total_instance/total_day
         
         vr[i] <- probability
@@ -89,15 +93,15 @@ I'm going to create a data from for the probability that the person is 1-home 2-
 
 ```{r}
 
-d <- data.frame(matrix(nrow=7, ncol=24))
+d <- data.frame(matrix(nrow=24, ncol=7))
 
 for (i in 1:length(days_of_week)){
   
-  d[i,] <- rbind(func4(days_of_week[i],"1"))
+  d[,i] <- cbind(func4(days_of_week[i], HOME))
   
 }
 
-rownames(d) <- days_of_week
+colnames(d) <- days_of_week
 
 heatmap_home <- heatmap(as.matrix(d), Rowv=NA, Colv=NA, col = cm.colors(256),scale="none", margins=c(5,10))
 
@@ -112,7 +116,7 @@ d2 <- data.frame(matrix(nrow=7, ncol=24))
 
 for (i in 1:length(days_of_week)){
   
-  d2[i,] <- rbind(func4(days_of_week[i],"2"))
+  d2[i,] <- rbind(func4(days_of_week[i], WORK))
   
 }
 
@@ -130,11 +134,12 @@ d3 <- data.frame(matrix(nrow=7, ncol=24))
 
 for (i in 1:length(days_of_week)){
   
-  d3[i,] <- rbind(func4(days_of_week[i],"3"))
+  d3[i,] <- rbind(func4(days_of_week[i], ELSEWHERE))
   
 }
 
 rownames(d3) <- days_of_week
+heatmap_elsewhere <- heatmap(as.matrix(d3), Rowv=NA, Colv=NA, col = cm.colors(256),scale="none", margins=c(5,10))
 ```
 
 Next I'm going to work on creating heatmaps for each place
@@ -145,8 +150,6 @@ p <- plot_ly(z=d3, type = "heatmap")
 p
 heatmap(d3)
 
-
-heatmap_elsewhere <- heatmap(as.matrix(d3), Rowv=NA, Colv=NA, col = cm.colors(256),scale="none", margins=c(5,10))
 #confidence band, variance 
 #measure of standard error 
 #(time series)
