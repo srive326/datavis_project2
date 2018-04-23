@@ -1,0 +1,19 @@
+---
+title: "communicationEDA"
+author: "Noah Johnson, Stephanie Rivera"
+date: "April 22, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(install.load)
+install_load('tidyverse')
+install_load('ggplot2')
+```
+
+```{r}
+load(file = "data/realitymining.Rda")
+#data <- as.data.frame(data)
+```
