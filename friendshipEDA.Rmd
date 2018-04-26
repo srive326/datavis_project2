@@ -11,14 +11,41 @@ knitr::opts_chunk$set(echo = TRUE)
 library(install.load)
 install_load('tidyverse')
 install_load('ggplot2')
+install_load('networkD3')
 ```
+
+## Simple Network Example
+
+```{r}
+# Simple example
+Source <- c("A", "A", "A", "A", "B", "B", "C", "C", "D")
+Target <- c("B", "C", "D", "J", "E", "F", "G", "H", "I")
+NetworkData <- data.frame(Source, Target)
+
+# Create graph
+#simpleNetwork(NetworkData)
+simpleNetwork(NetworkData, fontFamily = "sans-serif")
+```
+
+## Force Network example
+```{r}
+data("MisLinks")
+data("MisNodes")
+```
+
+```{r}
+str(MisLinks)
+str(MisNodes)
+```
+
+```{r}
+forceNetwork(Links = MisLinks, Nodes = MisNodes, Source = "source", Target = "target", Value = "value", NodeID = "name",
+             Nodesize = "size", radiusCalculation = "Math.sqrt(d.nodesize)+6", Group = "group", opacity = 1, opacityNoHover = TRUE, width = 1000, height = 700, fontSize = 12)
+```
+
 
 ```{r}
 load(file = "data/friendsmatrix.Rda")
 friends <- as.data.frame(new)
 str(friends)
-```
-
-```{r}
-
 ```
