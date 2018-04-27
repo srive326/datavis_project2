@@ -49,3 +49,30 @@ load(file = "data/friendsmatrix.Rda")
 friends <- as.data.frame(new)
 str(friends)
 ```
+
+```{r}
+n <- nrow(friends)
+
+colnames(friends)
+
+friendNodes <- data.frame(subjectID = colnames(friends), size = 1, group = 1)
+
+source <- c()
+target <- c()
+k <- 1
+for (i in 1:n) {
+  for (j in 1:n) {
+    if (!is.na(friends[i,j])) {
+      source[k] <- i-1
+      target[k] <- j-1
+      k <- k + 1
+    }
+  }
+}
+friendLinks <- data.frame(source = source, target = target, value = 1)
+
+```
+
+```{r}
+forceNetwork(Links = friendLinks, Nodes = friendNodes, Source = "source", Target = "target", Value = "value", NodeID = "subjectID", Nodesize = "size", Group = "group", arrows = TRUE, legend = TRUE, zoom = T, opacity = 1, opacityNoHover = TRUE, width = 1000, height = 700, fontSize = 12)
+```
