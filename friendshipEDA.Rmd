@@ -46,6 +46,7 @@ forceNetwork(Links = MisLinks, Nodes = MisNodes, Source = "source", Target = "ta
 
 ```{r}
 load(file = "data/friendsmatrix.Rda")
+load(file = "data/groups.Rda")
 friends <- as.data.frame(new)
 str(friends)
 ```
@@ -53,26 +54,33 @@ str(friends)
 ```{r}
 n <- nrow(friends)
 
-colnames(friends)
+sources <- c()
+targets <- c()
 
-friendNodes <- data.frame(subjectID = colnames(friends), size = 1, group = 1)
-
-source <- c()
-target <- c()
+# Generate links
 k <- 1
 for (i in 1:n) {
   for (j in 1:n) {
     if (!is.na(friends[i,j])) {
-      source[k] <- i-1
-      target[k] <- j-1
+      sources[k] <- i-1
+      targets[k] <- j-1
       k <- k + 1
     }
   }
 }
-friendLinks <- data.frame(source = source, target = target, value = 1)
+
+# Count number of friends for every subject in the network
+sizes <- sapply(colnames(friends), function(s) return (exp(sum(targets + 1 == s))), USE.NAMES = FALSE)
+
+# Create df for nodes (1 per subject)
+friendNodes <- data.frame(subjectID = colnames(friends), size = sizes, group = groups)
+
+# Create df for links
+friendLinks <- data.frame(source = sources, target = targets, value = 1)
 
 ```
 
 ```{r}
-forceNetwork(Links = friendLinks, Nodes = friendNodes, Source = "source", Target = "target", Value = "value", NodeID = "subjectID", Nodesize = "size", Group = "group", arrows = TRUE, legend = TRUE, zoom = T, opacity = 1, opacityNoHover = TRUE, width = 1000, height = 700, fontSize = 12)
+forceNetwork(Links = friendLinks, Nodes = friendNodes, Source = "source", Target = "target", Value = "value", NodeID = "subjectID", Nodesize = "size", Group = "group", linkWidth = JS("function(d) { return Math.sqrt(d.value); }"), arrows = TRUE, legend = TRUE, zoom = T, opacity = 1, opacityNoHover = 1, width = 1000, height = 700, fontSize = 12)
 ```
+
