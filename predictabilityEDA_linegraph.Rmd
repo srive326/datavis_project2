@@ -306,5 +306,36 @@ for (i in 1:nrow(s10data)){
   }
 }
 
+colnames(df6) <- c("Date", "Hour_Home")
+df6 <- na.omit(df6)
+
+str(df6)
+
+```
+
+I want to add the days of the week to this data frame as well 
+
+```{r}
+df6$day <- weekdays(as.Date(df6$Date))
+df6$Date <- as.Date(df6$Date)
+new1 <- df6 %>% 
+  mutate(week = cut.Date(df6$Date, breaks = "1 week", labels = FALSE, start.on.monday = FALSE)) %>% 
+  arrange(Date)
+
+```
+
+Now it's time to create a scatterplot/linegraph of this data :)
+
+```{r}
+ggplot(df6, aes(x=day, y=Hour_Home)) + geom_point()
+```
+Now a line graph of the data based on weeks
+
+```{r}
+
+p<-ggplot(new1, aes(x=day, y=Hour_Home, group=week)) +
+  geom_line(aes(color=week))+
+  geom_point(aes(color=week))
+p
 ```
 
