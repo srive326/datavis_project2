@@ -47,8 +47,8 @@ forceNetwork(Links = MisLinks, Nodes = MisNodes, Source = "source", Target = "ta
 ```{r}
 load(file = "data/friendsmatrix.Rda")
 load(file = "data/groups.Rda")
-friends <- as.data.frame(new)
 str(friends)
+str(groups)
 ```
 
 ```{r}
