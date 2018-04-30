@@ -304,15 +304,16 @@ this one works
 
 ```{r}
 
-linegraph_list <- list()
 
 
 
-df6 <- data.frame(matrix(nrow=nrow(s10data), ncol=2))
 
-dates_week <- as.matrix(dates_week)
-
-for (i in 1:nrow(s10data)){
+myFunction <- function(s10data){
+  
+  df6 <- data.frame(matrix(nrow=nrow(dates_week), ncol=2))
+  dates_week <- as.matrix(dates_week)
+  
+  for (i in 1:nrow(s10data)){
   for (m in 2:25){
     location = as.numeric(dates_week[i,m])
     if(is.na(location)){
@@ -343,7 +344,15 @@ for (i in 1:nrow(s10data)){
 
 colnames(df6) <- c("Date", "Hour_Home")
 df6 <- na.omit(df6)
+df6$day <- weekdays(as.Date(df6$Date))
+df6$Date <- as.Date(df6$Date)
+df6 <- df6 %>% 
+  mutate(week = cut.Date(df6$Date, breaks = "1 week", labels = FALSE, start.on.monday = FALSE)) %>% 
+  arrange(Date)
 
+}
+
+hello <- myFunction(s10data)
 
 
 ```
@@ -351,11 +360,7 @@ df6 <- na.omit(df6)
 I want to add the days of the week to this data frame as well 
 
 ```{r}
-df6$day <- weekdays(as.Date(df6$Date))
-df6$Date <- as.Date(df6$Date)
-new1 <- df6 %>% 
-  mutate(week = cut.Date(df6$Date, breaks = "1 week", labels = FALSE, start.on.monday = FALSE)) %>% 
-  arrange(Date)
+
 
 ```
 
