@@ -1,0 +1,414 @@
+---
+title: "Reality Mining Predictability EDA"
+author: "Stephanie"
+date: "4/16/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(install.load)
+install_load('R.matlab')
+install_load('plotly')
+install_load('ggplot2')
+install_load('lubridate')
+install_load('data.table')
+#install_load('networkD3')
+```
+
+Subject 10 considers themselves very predictable. I'll work to implment two visualizations on this subject to determine if their schedule is truly predictable or not.
+
+### Heatmap
+
+
+```{r}
+load(file = "/Users/stephanierivera/place.Rda")
+
+```
+
+
+
+```{r}
+#read in files
+
+readthis <- readMat("/Users/stephanierivera/Documents/datavis_project2/data/start_dates.mat")
+start_dates <- readthis$start.date.M
+start_dates <- start_dates[!(apply(start_dates, 1, function(y) any(y == 0))),]
+
+s <-start_dates[,2] 
+dateys <- as.POSIXct((s - 719529)*86400, origin = "1970-01-01")
+dateys <- as.Date(dateys, format = "%m/%d/%Y")
+
+
+path = "/Users/stephanierivera/Documents/datavis_project2/places_data/"
+files <-  list.files(path, pattern="*.mat")
+listy <- list()
+
+#things within the for loop
+#df <- data.frame(readMat(paste(path,files[1], sep = ""))$p2)
+
+
+for(i in 1:length(files)){
+  df <- data.frame(readMat(paste(path,files[i], sep = ""))$p2)
+  started_on <- dateys[i]
+  colnames(df) <- c(seq(from=started_on,by= "day", length.out = ncol(df)))
+  df <- as.data.frame(t(df))
+  setDT(df,keep.rownames = TRUE)
+  colnames(df) <- c("Date", as.character(1:24))
+  df$day <- weekdays(as.Date(df$Date))
+  listy[[i]] <- df
+}
+
+#listy contains the dataframe needed to create the linegraph
+
+```
+
+
+
+
+I need a new data frame where the probabilities are calculated in the cells. 
+
+```{r}
+HOME <- '1'
+WORK <- '2'
+ELSEWHERE <- '3'
+NO_SIGNAL <- '4'
+PHONE_OFF <- NaN
+
+#example of 24th hour probability for friday
+
+days_of_week <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+
+total_friday <- sum(s10data$day == "Friday")
+
+total_home_friday <- sum(s10data$day == "Friday" & s10data$'24'==HOME)
+
+probability <- total_home_friday/total_friday
+
+```
+
+I should probably create a function to do these probabilities quickly and at once.. below I will work to create this function.
+
+This function takes in the day of the week and the location we want to compute the probability for. 
+
+```{r}
+#function to get the probability of being home on a friday for each hour in a day 
+
+
+func2 <- function(input_day) {
+    vr <- c() ### an empty vector 
+
+    for (i in 1:24) { 
+      
+        total_day <- sum(s10data$days == input_day)
+        total_instance <- sum(s10data$days == input_day & s10data[,i+1]== '1')
+        probability <- total_instance/total_day
+        
+        vr[i] <- probability
+        
+    }
+    vr
+}
+
+func2("Friday")
+
+```
+
+```{r}
+
+
+  
+func3 <- function(input_day, location) {
+    vr <- c() ### an empty vector 
+
+    for (i in 1:24) { 
+      
+        total_day <- sum(s10data$days == input_day)
+        total_instance <- sum(s10data$days == input_day & s10data[,i+1]== location)
+        probability <- total_instance/total_day
+        
+        vr[i] <- probability
+        
+    }
+    vr
+}
+
+func3("Friday","2")
+
+```
+
+```{r}
+
+func4 <- function(input_day, location) {
+    vr <- c() ### an empty vector 
+    probability_skeleton <- data.frame()
+    for (j in 1:length(input_day)){
+        for (i in 1:24) { 
+      
+        total_day <- sum(s10data$day == input_day)
+        total_instance <- sum(s10data$day == input_day & s10data[,i+1]== location)
+        probability <- total_instance/total_day
+        
+        vr[i] <- probability
+        
+        }
+        
+        
+    }
+    vr
+}
+
+hold <-func4("Monday","2")
+
+hold[3]
+```
+
+I'm going to create a data from for the probability that the person is 1-home 2-work 3-elsewhere, below is the example for the probability the subject is at home 
+
+```{r}
+
+d <- data.frame(matrix(nrow=24, ncol=7))
+
+for (i in 1:length(days_of_week)){
+  
+  d[,i] <- cbind(func4(days_of_week[i], HOME))
+  
+}
+
+colnames(d) <- days_of_week
+
+heatmap_home <- heatmap(as.matrix(d), Rowv=NA, Colv=NA, col = cm.colors(256),scale="none", margins=c(5,10))
+
+```
+
+The subject is at work 
+
+```{r}
+d2 <- data.frame(matrix(nrow=24, ncol=7))
+
+for (i in 1:length(days_of_week)){
+  
+  d2[,i] <- cbind(func4(days_of_week[i], WORK))
+  
+}
+
+colnames(d2) <- days_of_week
+
+heatmap_work <- heatmap(as.matrix(d2), Rowv=NA, Colv=NA, col = cm.colors(256),scale="none", margins=c(5,10))
+
+```
+
+The subject is else where 
+
+```{r}
+d3 <- data.frame(matrix(nrow=24, ncol=7))
+
+for (i in 1:length(days_of_week)){
+  
+  d3[,i] <- cbind(func4(days_of_week[i], ELSEWHERE))
+  
+}
+
+colnames(d3) <- days_of_week
+heatmap_elsewhere <- heatmap(as.matrix(d3), Rowv=NA, Colv=NA, col = cm.colors(256),scale="none", margins=c(5,10))
+```
+
+Next I'm going to work on creating heatmaps for each place
+
+```{r}
+
+#p <- plot_ly(z=d3, type = "heatmap")
+#p
+#heatmap(d3)
+
+#confidence band, variance 
+#measure of standard error 
+#(time series)
+#narrative transition
+
+```
+
+
+
+How will these probability heatmaps look for someone who doesn't consider themselves predictable? 
+
+```{r}
+
+```
+
+### Line graph
+
+```{r}
+
+#sn_startdate <- readMat("")
+
+
+loc <- readMat("data/withdate.mat")
+#1st column
+val <- loc[["withdate"]][[1]][,1]
+val <- as.POSIXct((val - 719529)*86400, origin = "1970-01-01")
+
+#create data frame with date and location
+date_location <- data.frame(val,loc[["withdate"]][[1]][,2])
+colnames(date_location) <- c("date","location")
+home <- 5119.40811000000
+date_location$location[date_location$location == home] <- "Home"
+#get day of the week in new column
+date_location$days <- weekdays(as.Date(date_location$date))
+date_location$time <- as.numeric(format(date_location$date,"%H"))
+when_home <- dplyr::filter(date_location, date_location$location == "Home")
+a <- ggplot(when_home, aes(days,time)) + geom_point(alpha=.2) + scale_x_discrete(limits=c("Sunday","Monday","Tuesday","Wednesday","Thursday", "Friday","Saturday"))
+a
+
+#start w/ values of hour greater than 8
+when_home8 <- dplyr::filter(when_home, when_home$time > 8)
+b <- ggplot(when_home8, aes(days,time)) + geom_point(alpha=0.5) + scale_x_discrete(limits=c("Sunday","Monday","Tuesday","Wednesday","Thursday", "Friday","Saturday"))
+b
+
+```
+
+```{r}
+#loc2 <- readMat("data/places.mat")
+```
+My next task is to create a line graph, where each line represents the time the subject went home after being logged at work for a particular week. 
+I'm going to use s10data to create this new data frame and create a new column that groups days into weeks. 
+
+```{r}
+
+dates_week <- s10data %>% 
+  mutate(week = cut.Date(Date, breaks = "1 week", labels = FALSE, start.on.monday = FALSE)) %>% 
+  arrange(Date)
+
+```
+
+Now that I have a column that groups days into weeks, I need to work to create a new data structure with the kind of line graph I want. 
+
+
+```{r}
+
+test <- dates_week %>% filter(dates_week[,2:26] == 1)
+
+dates_week[,2:26]
+
+#loop that goes through column to find 1st instance where 2 is followed by a 1 (went from work to home)
+
+store <- as.numeric(dates_week[1,2])
+
+
+```
+
+
+
+this one works 
+
+```{r}
+
+
+
+
+
+myFunction <- function(dates_week){
+  
+  df6 <- data.frame(matrix(nrow=nrow(dates_week), ncol=2))
+  dates_week <- as.matrix(dates_week)
+  
+  for (i in 1:nrow(dates_week)){
+  for (m in 2:25){
+    location = as.numeric(dates_week[i,m])
+    if(is.na(location)){
+       break
+      }
+    if (location == 2){
+      for (n in m+1:25){
+        check = as.numeric(dates_week[i,n])
+        if (is.na(check)){
+          break
+        }
+        if(check == 1){
+          hour = colnames(dates_week)[n]
+          dates = dates_week[i,1]
+          df6[i,1] <- dates
+          df6[i,2] <- as.numeric(hour)
+        break
+        }
+        
+        
+      }
+      #this break is important
+      break
+    }
+    
+  }
+}
+
+colnames(df6) <- c("Date", "Hour_Home")
+df6 <- na.omit(df6)
+df6$day <- weekdays(as.Date(df6$Date))
+df6$Date <- as.Date(df6$Date)
+df6 <- df6 %>% 
+  mutate(week = cut.Date(df6$Date, breaks = "1 week", labels = FALSE, start.on.monday = FALSE)) %>% 
+  arrange(Date)
+
+}
+
+
+nextone <- myFunction(listy[[64]])
+
+list_forlinegraph <- list()
+count <- 0
+for (k in :length(listy)){
+  
+hello <- myFunction(listy[[k]])
+
+list_forlinegraph[[k]] <- hello
+
+}
+
+print(count)
+
+
+hi <- listy[[39]]
+```
+
+I want to add the days of the week to this data frame as well 
+
+```{r}
+
+
+```
+
+Now it's time to create a scatterplot/linegraph of this data :)
+
+```{r}
+ggplot(df6, aes(x=day, y=Hour_Home)) + geom_point()
+```
+Now a line graph of the data based on weeks
+
+```{r}
+
+list_ofplots <- list()
+
+for (s in 1:length(list_forlinegraph)){
+p<-ggplot(list_forlinegraph[[s]], aes(x=factor(day, level = c("Sunday","Monday","Tuesday","Wednesday","Thursday", "Friday","Saturday")), y=Hour_Home, group=week)) +
+  geom_line(aes(color=week))+
+  geom_point(aes(color=week)) + 
+  labs(title = "Subjects' Hour Home from Work") +
+  labs(x = "Day of Week") +
+  labs(y = "Hour (Out of 24)") 
+
+list_ofplots[[s]] <- p
+}
+
+vec_ofsubjects <- c(3,4,7,8,9, 10,13,15,16,17,19,20,21,22,23,25,26,27,29,33,34,35,36,37,38,40,41,42,49,50,52,53,54,55,56,60,61,62,63,67,70,72,73,74,75,76,77,78,79,81,82,83,86,88,89,90,93,94,96,97,98,99,101,103)
+
+length(vec_ofsubjects)
+
+vec_ofsubjects[c(16,39,63)]
+
+subjects_linegraph <- as.matrix(vec_ofsubjects[!vec_ofsubjects %in% vec_ofsubjects[c(16,39,63)]])
+
+names(subjects_linegraph)[1] <- c("Subject Number")
+
+```
+
