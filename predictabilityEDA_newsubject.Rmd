@@ -308,12 +308,12 @@ this one works
 
 
 
-myFunction <- function(s10data){
+myFunction <- function(dates_week){
   
   df6 <- data.frame(matrix(nrow=nrow(dates_week), ncol=2))
   dates_week <- as.matrix(dates_week)
   
-  for (i in 1:nrow(s10data)){
+  for (i in 1:nrow(dates_week)){
   for (m in 2:25){
     location = as.numeric(dates_week[i,m])
     if(is.na(location)){
@@ -352,9 +352,23 @@ df6 <- df6 %>%
 
 }
 
-hello <- myFunction(s10data)
+
+nextone <- myFunction(listy[[64]])
+
+list_forlinegraph <- list()
+count <- 0
+for (k in 63:length(listy)){
+  
+hello <- myFunction(listy[[k]])
+
+list_forlinegraph[[k-1]] <- hello
+
+}
+
+print(count)
 
 
+hi <- listy[[39]]
 ```
 
 I want to add the days of the week to this data frame as well 
