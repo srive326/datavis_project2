@@ -15,6 +15,9 @@ load(file = "data/friendsmatrix.Rda")
 load(file = "data/networkIDmapping.Rda")
 load(file = "data/groups.Rda")
 load(file = "data/proximityEvents.Rda")
+load(file = "data/list_forlinegraph.Rda")
+load(file = "data/subjects_linegraph.Rda")
+
 
 
 #####################################################
@@ -52,8 +55,18 @@ friendLinks <- data.frame(source = sources, target = targets, value = values)
 
 # Define UI with tabs
 ui <- navbarPage("Visualizing Survey Bias",
-                 tabPanel("Predictability", plotOutput("distPlot")),
-                 tabPanel("Friendship", forceNetworkOutput("friendNetwork"))
+                 tabPanel("Predictability", 
+                          selectizeInput("SubjectID",
+                                         "Subject ID:", 
+                                         sort(unique(flights$ORIGIN)),
+                                         multiple = TRUE,
+                                         selected = c("MIA", "FLL")),
+                          plotOutput("distPlot"),
+                          plotOutput("lineGraph")
+                 ),
+                 
+                 tabPanel("Friendship", 
+                          forceNetworkOutput("friendNetwork"))
       )
 
 
