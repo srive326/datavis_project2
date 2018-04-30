@@ -329,7 +329,7 @@ myFunction <- function(dates_week){
           hour = colnames(dates_week)[n]
           dates = dates_week[i,1]
           df6[i,1] <- dates
-          df6[i,2] <- hour
+          df6[i,2] <- as.numeric(hour)
         break
         }
         
@@ -357,11 +357,11 @@ nextone <- myFunction(listy[[64]])
 
 list_forlinegraph <- list()
 count <- 0
-for (k in 63:length(listy)){
+for (k in :length(listy)){
   
 hello <- myFunction(listy[[k]])
 
-list_forlinegraph[[k-1]] <- hello
+list_forlinegraph[[k]] <- hello
 
 }
 
@@ -387,9 +387,17 @@ Now a line graph of the data based on weeks
 
 ```{r}
 
-p<-ggplot(new1, aes(x=day, y=Hour_Home, group=week)) +
+
+
+p<-ggplot(list_forlinegraph[[12]], aes(x=factor(day, level = c("Sunday","Monday","Tuesday","Wednesday","Thursday", "Friday","Saturday")), y=Hour_Home, group=week)) +
   geom_line(aes(color=week))+
-  geom_point(aes(color=week))
+  geom_point(aes(color=week)) + 
+  labs(title = "Subjects' Hour Home from Work") +
+  labs(x = "Day of Week") +
+  labs(y = "Hour (Out of 24)") 
+
 p
+
+
 ```
 
