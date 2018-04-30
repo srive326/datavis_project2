@@ -46,8 +46,10 @@ forceNetwork(Links = MisLinks, Nodes = MisNodes, Source = "source", Target = "ta
 
 ```{r}
 load(file = "data/friendsmatrix.Rda")
+load(file = "data/networkIDmapping.Rda")
 load(file = "data/groups.Rda")
 str(friends)
+str(mapped_ids)
 str(groups)
 ```
 
@@ -70,10 +72,10 @@ for (i in 1:n) {
 }
 
 # Count number of friends for every subject in the network
-sizes <- sapply(colnames(friends), function(s) return (exp(sum(targets + 1 == s))), USE.NAMES = FALSE)
+sizes <- sapply(1:94, function(s) return (exp(sum(targets + 1 == s))), USE.NAMES = FALSE)
 
 # Create df for nodes (1 per subject)
-friendNodes <- data.frame(subjectID = colnames(friends), size = sizes, group = groups)
+friendNodes <- data.frame(subjectID = mapped_ids, size = sizes, group = groups)
 
 # Create df for links
 friendLinks <- data.frame(source = sources, target = targets, value = 1)
