@@ -15,8 +15,8 @@ load(file = "data/friendsmatrix.Rda")
 load(file = "data/networkIDmapping.Rda")
 load(file = "data/groups.Rda")
 load(file = "data/proximityEvents.Rda")
-load(file = "data/list_forlinegraph.Rda")
-load(file = "data/subjects_linegraph.Rda")
+load(file = "/home/noah/git/datavis_project2/data/list_ofplots.Rda")
+load(file = "/home/noah/git/datavis_project2/data/subjects_linegraph.Rda")
 
 
 
@@ -58,9 +58,8 @@ ui <- navbarPage("Visualizing Survey Bias",
                  tabPanel("Predictability", 
                           selectizeInput("SubjectID",
                                          "Subject ID:", 
-                                         sort(unique(flights$ORIGIN)),
-                                         multiple = TRUE,
-                                         selected = c("MIA", "FLL")),
+                                         subjects_linegraph[,1],
+                                         selected = 3),
                           plotOutput("distPlot"),
                           plotOutput("lineGraph")
                  ),
@@ -75,6 +74,11 @@ server <- function(input, output) {
    
    output$distPlot <- renderPlot({
      plot(iris)
+   })
+   
+   output$lineGraph <- renderPlot({
+     index <- match(input$SubjectID, subjects_linegraph[,1])
+     list_ofplots[[index]]
    })
    
    output$friendNetwork <- renderForceNetwork({
