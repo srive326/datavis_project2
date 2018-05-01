@@ -19,7 +19,7 @@ load(file = "data/proximityEvents.Rda")
 load(file = "data/list_ofplots.Rda")
 load(file = "data/subjects_linegraph.Rda")
 load(file = "data/predictabilityResponses.Rda")
-load(file = "data/predictabilityResponses.Rda")
+load(file = "data/heatmap_list.Rda")
 
 
 
@@ -101,7 +101,8 @@ ui <- navbarPage(
 server <- function(input, output) {
    
    output$heatmap <- renderPlot({
-     latest_ting <- data.frame(heatmap_list[[input$subjectID]])
+     index <- match(input$SubjectID, subjects_linegraph[,1])
+     latest_ting <- data.frame(heatmap_list[[index]])
      
      latest_ting[is.na(latest_ting)] <- 0
      latest_ting[latest_ting == 3] <- 0
