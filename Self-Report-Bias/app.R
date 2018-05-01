@@ -9,7 +9,9 @@
 
 library(shiny)
 library(tidyverse)
-library('networkD3')
+library(networkD3)
+library(ggplot2)
+library(plotly)
 
 # Load data for vizzes
 load(file = "data/friendsmatrix.Rda")
@@ -20,6 +22,7 @@ load(file = "data/list_ofplots.Rda")
 load(file = "data/subjects_linegraph.Rda")
 load(file = "data/predictabilityResponses.Rda")
 load(file = "data/heatmap_list.Rda")
+load(file = "data/texts.Rda")
 
 
 
@@ -90,9 +93,8 @@ ui <- navbarPage(
     forceNetworkOutput("friendNetwork")
   ),
 
-  tabPanel("Communication", 
-           "Coming Soon"
-           #plotOutput("boxPlot")
+  tabPanel("Communication",
+           plotlyOutput("boxPlot")
   )
 )
 
@@ -119,10 +121,25 @@ server <- function(input, output) {
      list_ofplots[[index]]
    })
    
-   output$boxPlot <- renderPlot({ # TODO
-     boxplot(len~supp*dose, data=ToothGrowth, notch=TRUE, 
-             col=(c("gold","darkgreen")),
-             main="Tooth Growth", xlab="Suppliment and Dose")
+   output$boxPlot <- renderPlotly({
+     vals <- texts %>% 
+       group_by(response) %>% 
+       summarise(iqr = IQR(num), upper.quartile = quantile(num, probs=0.75),
+                 lower.quartile = quantile(num, probs=0.25)) %>% 
+       mutate(outlier.bound.lower = pmax(0, (lower.quartile - (1.5 * iqr))),
+              outlier.bound.upper = upper.quartile + 1.5 * iqr)
+     
+     plot_ly(texts, y = ~num, color = ~response, type = "box",
+             hoverinfo = 'text',
+             text = ~paste('Num Texts: ', num,
+                           'Subject ID: ', id)
+             )
+     
+     
+     #p <- texts %>% 
+    #   ggplot(aes(response, num), text = ~paste('Species: ', response)) + geom_boxplot() +
+    #   labs(title = "How often do you send text messages?", x = "", y = "Avg. text msgs / month")
+    # ggplotly(p, tooltip = "text")
    })
    
    output$friendNetwork <- renderForceNetwork({
