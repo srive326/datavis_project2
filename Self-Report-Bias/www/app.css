@@ -1,0 +1,10 @@
+.predictabilityResponse {
+text-align: center;
+}
+
+#predictabilityResponseResponse {
+color: red;
+/*padding-left: 70px;*/
+/*text-align: center;*/
+font-size: 110%;
+}

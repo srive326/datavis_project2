@@ -9,20 +9,22 @@
 
 library(shiny)
 library(tidyverse)
+library('networkD3')
 
 # Load data for vizzes
 load(file = "data/friendsmatrix.Rda")
 load(file = "data/networkIDmapping.Rda")
 load(file = "data/groups.Rda")
 load(file = "data/proximityEvents.Rda")
-load(file = "/home/noah/git/datavis_project2/data/list_ofplots.Rda")
-load(file = "/home/noah/git/datavis_project2/data/subjects_linegraph.Rda")
+load(file = "data/list_ofplots.Rda")
+load(file = "data/subjects_linegraph.Rda")
+load(file = "data/predictabilityResponses.Rda")
 
 
 
 #####################################################
 # Create nodes and edges for friendship network graph
-n <- nrow(friends)
+N <- nrow(friends)
 
 sources <- c()
 targets <- c()
@@ -54,25 +56,50 @@ friendLinks <- data.frame(source = sources, target = targets, value = values)
 
 
 # Define UI with tabs
-ui <- navbarPage("Visualizing Survey Bias",
-                 tabPanel("Predictability", 
-                          selectizeInput("SubjectID",
-                                         "Subject ID:", 
-                                         subjects_linegraph[,1],
-                                         selected = 3),
-                          plotOutput("distPlot"),
-                          plotOutput("lineGraph")
-                 ),
-                 
-                 tabPanel("Friendship", 
-                          forceNetworkOutput("friendNetwork"))
+ui <- navbarPage(
+  theme = "app.css",
+  title = "Visualizing Survey Bias",
+  tabPanel("Predictability",
+    fluidRow(
+      column(
+        width = 6,
+        selectizeInput(
+          "SubjectID",
+          "Subject ID", 
+          subjects_linegraph[,1],
+          selected = 3
+        )
+      ),
+      column(
+        width = 6,
+        tags$div(tags$b('"How predictable are you?"'), class = "predictabilityResponse"),
+        htmlOutput("predictabilityResponse")
       )
+    ),
+
+    fluidRow(
+      #column(width = 6, plotOutput("heatmap")),
+      column(width = 6, plotOutput("lineGraph"))
+    )
+
+  ),
+ 
+  tabPanel(
+    "Friendship", 
+    forceNetworkOutput("friendNetwork")
+  ),
+
+  tabPanel("Communication", 
+           "Coming Soon"
+           #plotOutput("boxPlot")
+  )
+)
 
 
 # Define server logic required to draw vizzes
 server <- function(input, output) {
    
-   output$distPlot <- renderPlot({
+   output$heatmap <- renderPlot({
      plot(iris)
    })
    
@@ -81,14 +108,31 @@ server <- function(input, output) {
      list_ofplots[[index]]
    })
    
+   output$boxPlot <- renderPlot({ # TODO
+     boxplot(len~supp*dose, data=ToothGrowth, notch=TRUE, 
+             col=(c("gold","darkgreen")),
+             main="Tooth Growth", xlab="Suppliment and Dose")
+   })
+   
    output$friendNetwork <- renderForceNetwork({
      forceNetwork(Links = friendLinks, Nodes = friendNodes, Source = "source", 
                   Target = "target", Value = "value", NodeID = "subjectID", 
                   Nodesize = "size", Group = "group", 
                   linkWidth = JS("function(d) { return Math.sqrt(d.value); }"), 
                   arrows = TRUE, legend = TRUE, zoom = T, 
-                  opacity = 1, opacityNoHover = 1, charge = -75)
+                  opacity = 1, opacityNoHover = 1, charge = -30, height = 10000, width = 10000)
    })
+   
+   output$predictabilityResponse <- renderText({
+     t <- predictability.responses[as.integer(input$SubjectID)]
+     if (is.na(t)) {
+       t <- "No Response"
+     }
+     return(paste("<div id=predictabilityResponseResponse class=predictabilityResponse>", t, "</div>"))
+   })
+   
+   
+   
 }
 
 # Run the application 

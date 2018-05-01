@@ -95,3 +95,19 @@ for (i in 1:N) {
 }
 
 save(proximity.events, file = "/home/noah/git/datavis_project2/data/proximityEvents.Rda")
+
+# Save predictability survey response for all subjects
+
+predictability.responses <- rep(NA, 106)
+for (index in 1:106) {
+  temp <- data$s["my.predictable", 1, index][[1]]
+  
+  if (length(temp) != 0) {
+    temp <- temp[[1]][[1]]
+    if (length(temp) != 0) {
+      predictability.responses[index] <- temp[1,1]
+    }
+  }
+}
+
+save(predictability.responses, file = "/home/noah/git/datavis_project2/data/predictabilityResponses.Rda")
