@@ -2,7 +2,7 @@
 # EDA things to subset the data
 ###
 
-load(file = "L:/Noah Johnson/data viz/datavis_project2/data/realitymining.Rda")
+load(file = "/home/noah/git/datavis_project2/data/realitymining.Rda")
 
 ### Save friends matrix and mapping of indices to subject IDs
 
@@ -42,24 +42,34 @@ for (index in 1:network_N) {
 
 save(groups, file = "/home/noah/git/datavis_project2/data/groups.Rda")
 
-# Save my.group response for every subject in network
-groups <- rep(NA, network_N)
+# Save my.affil response for every subject in network
+affiliations <- rep(NA, network_N)
 for (index in 1:network_N) {
-  #print(mapped_ids[index])
-  temp <- data$s["my.group", 1, mapped_ids[index]][[1]]
   
-  if (!is_empty(temp)) {
-    temp <- temp[[1]]
-    if (!is_empty(temp)) {
-      temp <- temp[[1]]
-      if (!is_empty(temp)) {
-        groups[index] <- temp[1,1]
-      }
-    }
+  temp <- data$s["my.affil", 1, mapped_ids[index]][[1]]
+  
+  if (length(temp) != 0) {
+    affiliations[index] <- temp[[1]][[1]][1,1]
   }
 }
 
-save(groups, file = "/home/noah/git/datavis_project2/data/groups.Rda")
+map_affiliations <- function(s) {
+  return (switch(s, 
+              grad =,
+              mlgrad = "Media Lab Grad Student", 
+              '1styeargrad ' = "Media Lab 1st Year Grad Student", 
+              professor = "Media Lab Professor", 
+              mlstaff = "Media Lab Staff",
+              sloan =,
+              sloan_2 = "Sloan Business School",
+              mlurop = "Media Lab Undergraduate",
+              mlfrosh = "Media Lab First Year Undergraduate"))
+}
+
+
+affiliations <- sapply(affiliations, map_affiliations, USE.NAMES = FALSE)
+
+save(affiliations, file = "/home/noah/git/datavis_project2/Self-Report-Bias/data/affiliations.Rda")
 
 
 # Save survey start date for every subject (all 106)

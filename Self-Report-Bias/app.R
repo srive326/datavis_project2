@@ -17,6 +17,7 @@ library(plotly)
 load(file = "data/friendsmatrix.Rda")
 load(file = "data/networkIDmapping.Rda")
 load(file = "data/groups.Rda")
+load(file = "data/affiliations.Rda")
 load(file = "data/proximityEvents.Rda")
 load(file = "data/list_ofplots.Rda")
 load(file = "data/subjects_linegraph.Rda")
@@ -51,7 +52,7 @@ for (i in 1:N) {
 sizes <- sapply(1:N, function(s) return (exp(sum(targets + 1 == s))), USE.NAMES = FALSE)
 
 # Create df for nodes (1 per subject)
-friendNodes <- data.frame(subjectID = mapped_ids, size = sizes, group = groups)
+friendNodes <- data.frame(subjectID = mapped_ids, size = sizes, group = affiliations)
 
 # Create df for links
 friendLinks <- data.frame(source = sources, target = targets, value = values)
@@ -122,6 +123,8 @@ server <- function(input, output) {
    })
    
    output$boxPlot <- renderPlotly({
+     
+     # Manually calculate IQR and quartiles so we can find outliers
      vals <- texts %>% 
        group_by(response) %>% 
        summarise(iqr = IQR(num), upper.quartile = quantile(num, probs=0.75),
@@ -129,11 +132,34 @@ server <- function(input, output) {
        mutate(outlier.bound.lower = pmax(0, (lower.quartile - (1.5 * iqr))),
               outlier.bound.upper = upper.quartile + 1.5 * iqr)
      
-     plot_ly(texts, y = ~num, color = ~response, type = "box",
-             hoverinfo = 'text',
-             text = ~paste('Num Texts: ', num,
-                           'Subject ID: ', id)
-             )
+     # This is a kludge. looping through all factor levels
+     outliers <- data.frame(id=c(), response=c(), num=c())
+     for (i in 1:nrow(vals)) {
+       tmp <- texts %>% filter(response == vals$response[i])
+       outliers <- bind_rows(outliers, 
+                             tmp %>% filter(num < vals$outlier.bound.lower[i])
+                             )
+       outliers <- bind_rows(outliers, 
+                             tmp %>% filter(num > vals$outlier.bound.upper[i])
+                             )
+     }
+     
+     plot_ly(texts, y = ~num, x=~response, color = ~response, type = "box", 
+             boxpoints = "all", jitter = 0.3) %>%
+       layout(hovermode = "closest")
+     
+     # Plot box plot with no tooltip, and add points on top with proper tooltip
+     plot_ly(texts, 
+             y = ~num, x=~response, 
+             color = ~response, 
+             type = "box", 
+             hoverinfo = "y") %>%
+       add_markers(data = outliers, hoverinfo = "text", text = paste(outliers$num, "\nID: ", outliers[,'id'])) %>% 
+       plotly::layout(title = '"How often do you send text messages?"', 
+              xaxis = list(title = "Response"), 
+              yaxis = list(title = "Avg. text msgs / month"),
+              hovermode = "closest"
+              )
      
      
      #p <- texts %>% 
