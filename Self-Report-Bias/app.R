@@ -1,12 +1,3 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
 library(tidyverse)
 library(networkD3)
@@ -28,7 +19,9 @@ load(file = "data/texts.Rda")
 
 
 #####################################################
-# Create nodes and edges for friendship network graph
+###       Create friendship network graph         ###
+#####################################################
+
 N <- nrow(friends)
 
 sources <- c()
@@ -57,10 +50,54 @@ friendNodes <- data.frame(subjectID = mapped_ids, size = sizes, group = affiliat
 # Create df for links
 friendLinks <- data.frame(source = sources, target = targets, value = values)
 
+viz.forceNetwork <- forceNetwork(Links = friendLinks, Nodes = friendNodes, Source = "source", 
+                                 Target = "target", Value = "value", NodeID = "subjectID", 
+                                 Nodesize = "size", Group = "group", 
+                                 linkWidth = JS("function(d) { return Math.sqrt(d.value); }"), 
+                                 arrows = TRUE, legend = TRUE, zoom = T, 
+                                 opacity = 1, opacityNoHover = 1, charge = -30, 
+                                 height = 10000, width = 10000)
+
+#####################################################
+###            Create box plot viz                ###
+#####################################################
+
+# Manually calculate IQR and quartiles so we can find outliers
+vals <- texts %>% 
+  group_by(response) %>% 
+  summarise(iqr = IQR(num), upper.quartile = quantile(num, probs=0.75),
+            lower.quartile = quantile(num, probs=0.25)) %>% 
+  mutate(outlier.bound.lower = pmax(0, (lower.quartile - (1.5 * iqr))),
+         outlier.bound.upper = upper.quartile + 1.5 * iqr)
+
+# This is a kludge. looping through all factor levels to get data frame of outliers
+outliers <- data.frame(id=c(), response=c(), num=c())
+for (i in 1:nrow(vals)) {
+  tmp <- texts %>% filter(response == vals$response[i])
+  outliers <- bind_rows(outliers, 
+                        tmp %>% filter(num < vals$outlier.bound.lower[i])
+  )
+  outliers <- bind_rows(outliers, 
+                        tmp %>% filter(num > vals$outlier.bound.upper[i])
+  )
+}
+
+# Box plot with scatter points of outliers added on top with proper tooltip
+viz.boxplot <- plot_ly(texts, 
+        y = ~num, x=~response, 
+        color = ~response, 
+        type = "box", 
+        hoverinfo = "y") %>%
+  add_markers(data = outliers, hoverinfo = "text", text = paste(outliers$num, "\nID: ", outliers[,'id'])) %>% 
+  plotly::layout(title = '"How often do you send text messages?"', 
+                 xaxis = list(title = "Response"), 
+                 yaxis = list(title = "Avg. text msgs / month"),
+                 hovermode = "closest"
+  )
 #####################################################
 
 
-# Define UI with tabs
+# Define UI as tabbed page
 ui <- navbarPage(
   theme = "app.css",
   title = "Visualizing Survey Bias",
@@ -103,7 +140,7 @@ ui <- navbarPage(
 # Define server logic required to draw vizzes
 server <- function(input, output) {
    
-   output$heatmap <- renderPlot({
+   output$heatmap <- renderPlot({ 
      index <- match(input$SubjectID, subjects_linegraph[,1])
      latest_ting <- data.frame(heatmap_list[[index]])
      
@@ -119,62 +156,15 @@ server <- function(input, output) {
    
    output$lineGraph <- renderPlot({
      index <- match(input$SubjectID, subjects_linegraph[,1])
-     list_ofplots[[index]]
+     return(list_ofplots[[index]])
    })
    
    output$boxPlot <- renderPlotly({
-     
-     # Manually calculate IQR and quartiles so we can find outliers
-     vals <- texts %>% 
-       group_by(response) %>% 
-       summarise(iqr = IQR(num), upper.quartile = quantile(num, probs=0.75),
-                 lower.quartile = quantile(num, probs=0.25)) %>% 
-       mutate(outlier.bound.lower = pmax(0, (lower.quartile - (1.5 * iqr))),
-              outlier.bound.upper = upper.quartile + 1.5 * iqr)
-     
-     # This is a kludge. looping through all factor levels
-     outliers <- data.frame(id=c(), response=c(), num=c())
-     for (i in 1:nrow(vals)) {
-       tmp <- texts %>% filter(response == vals$response[i])
-       outliers <- bind_rows(outliers, 
-                             tmp %>% filter(num < vals$outlier.bound.lower[i])
-                             )
-       outliers <- bind_rows(outliers, 
-                             tmp %>% filter(num > vals$outlier.bound.upper[i])
-                             )
-     }
-     
-     plot_ly(texts, y = ~num, x=~response, color = ~response, type = "box", 
-             boxpoints = "all", jitter = 0.3) %>%
-       layout(hovermode = "closest")
-     
-     # Plot box plot with no tooltip, and add points on top with proper tooltip
-     plot_ly(texts, 
-             y = ~num, x=~response, 
-             color = ~response, 
-             type = "box", 
-             hoverinfo = "y") %>%
-       add_markers(data = outliers, hoverinfo = "text", text = paste(outliers$num, "\nID: ", outliers[,'id'])) %>% 
-       plotly::layout(title = '"How often do you send text messages?"', 
-              xaxis = list(title = "Response"), 
-              yaxis = list(title = "Avg. text msgs / month"),
-              hovermode = "closest"
-              )
-     
-     
-     #p <- texts %>% 
-    #   ggplot(aes(response, num), text = ~paste('Species: ', response)) + geom_boxplot() +
-    #   labs(title = "How often do you send text messages?", x = "", y = "Avg. text msgs / month")
-    # ggplotly(p, tooltip = "text")
+     return(viz.boxplot)
    })
    
    output$friendNetwork <- renderForceNetwork({
-     forceNetwork(Links = friendLinks, Nodes = friendNodes, Source = "source", 
-                  Target = "target", Value = "value", NodeID = "subjectID", 
-                  Nodesize = "size", Group = "group", 
-                  linkWidth = JS("function(d) { return Math.sqrt(d.value); }"), 
-                  arrows = TRUE, legend = TRUE, zoom = T, 
-                  opacity = 1, opacityNoHover = 1, charge = -30, height = 10000, width = 10000)
+     return(viz.forceNetwork)
    })
    
    output$predictabilityResponse <- renderText({

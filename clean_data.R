@@ -2,7 +2,9 @@
 # EDA things to subset the data
 ###
 
-load(file = "/home/noah/git/datavis_project2/data/realitymining.Rda")
+setwd("/home/noah/git/datavis_project2/")
+
+load(file = "data/realitymining.Rda")
 
 ### Save friends matrix and mapping of indices to subject IDs
 
@@ -18,9 +20,9 @@ sub_sort <- data$network[4][[1]][1,] # Maps network indices to subject ID
 
 mapped_ids <- sapply(1:network_N, function(x) return (sub_sort[x])) # Get subject IDs for network indices
 
-save(friends, file = "/home/noah/git/datavis_project2/data/friendsmatrix.Rda")
+save(friends, file = "Self-Report-Bias/data/friendsmatrix.Rda")
 
-save(mapped_ids, file = "/home/noah/git/datavis_project2/data/networkIDmapping.Rda")
+save(mapped_ids, file = "Self-Report-Bias/data/networkIDmapping.Rda")
 
 
 # Save my.group response for every subject in network
@@ -40,7 +42,7 @@ for (index in 1:network_N) {
   }
 }
 
-save(groups, file = "/home/noah/git/datavis_project2/data/groups.Rda")
+save(groups, file = "Self-Report-Bias/data/groups.Rda")
 
 # Save my.affil response for every subject in network
 affiliations <- rep(NA, network_N)
@@ -69,7 +71,7 @@ map_affiliations <- function(s) {
 
 affiliations <- sapply(affiliations, map_affiliations, USE.NAMES = FALSE)
 
-save(affiliations, file = "/home/noah/git/datavis_project2/Self-Report-Bias/data/affiliations.Rda")
+save(affiliations, file = "Self-Report-Bias/data/affiliations.Rda")
 
 
 # Save survey start date for every subject (all 106)
@@ -82,7 +84,7 @@ for (subjectID in 1:N) {
     start.dates[subjectID] <- temp[1,1]
   }
 }
-save(start.dates, file = "/home/noah/git/datavis_project2/data/startDates.Rda")
+#save(start.dates, file = "Self-Report-Bias/data/startDates.Rda")
 
 
 # Get a list of mac addresses in integer form for every subject in network
@@ -125,7 +127,7 @@ for (i in 1:network_N) {
   }
 }
 
-save(proximity.events, file = "/home/noah/git/datavis_project2/data/proximityEvents.Rda")
+save(proximity.events, file = "Self-Report-Bias/data/proximityEvents.Rda")
 
 # Save predictability survey response for all subjects
 
@@ -141,7 +143,7 @@ for (index in 1:N) {
   }
 }
 
-save(predictability.responses, file = "/home/noah/git/datavis_project2/data/predictabilityResponses.Rda")
+save(predictability.responses, file = "Self-Report-Bias/data/predictabilityResponses.Rda")
 
 
 # Save text message data frame for all subjects
@@ -200,6 +202,6 @@ for (index in 1:N) {
 
 texts <- data.frame(id = 1:N, response = text.responses, num = numTexts)
 
-save(texts, file = "L:/Noah Johnson/data viz/datavis_project2/Self-Report-Bias/data/texts.Rda")
+save(texts, file = "Self-Report-Bias/data/texts.Rda")
 
 
