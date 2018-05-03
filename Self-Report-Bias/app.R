@@ -156,9 +156,11 @@ server <- function(input, output) {
      #my_palette <- colorRampPalette(c("red", "yellow", "green"))(n = 299)
      #col_breaks = c(seq(-1,0,length=100),  # for red
                     #seq(0.01,0.8,length=100),           # for yellow
-                    #seq(0.81,1,length=100)) 
-     heatmap.2(as.matrix(t(happy[,2:25])), trace="none", Colv=NA, Rowv=NA, dendrogram="none", symm=FALSE, main="Location = Home",labCol = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"),
-               key.title = "Color Key"
+                    #seq(0.81,1,length=100))
+     happy <- as.matrix(t(happy[,2:25]))
+     happy <- happy[nrow(happy):1,]
+     heatmap.2(happy, trace="none", Colv=NA, Rowv=NA, dendrogram="none", symm=FALSE, main="Location = Home",labCol = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"),
+               key.title = "Color Key",col = topo.colors(12),cexCol=.9
                
                )
      
