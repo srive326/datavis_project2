@@ -3,6 +3,7 @@ library(tidyverse)
 library(networkD3)
 library(ggplot2)
 library(plotly)
+library(gplots)
 
 # Load data for vizzes
 load(file = "data/friendsmatrix.Rda")
@@ -151,7 +152,16 @@ server <- function(input, output) {
      happy <- aggregate(latest_ting[,2:25], by=list(day = latest_ting$day), FUN=sum)
      names(happy) <- c("day",1:24)
      happy<- happy[c(4,2,6,7,5,1,4),]
-     heatmap(as.matrix(t(happy[,2:25])), Rowv=NA, Colv=NA, col = cm.colors(256),scale="none", margins=c(8,10), labCol = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+     #heatmap(as.matrix(t(happy[,2:25])), Rowv=NA, Colv=NA, col = topo.colors(12),scale="none", margins=c(8,10), labCol = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+     #my_palette <- colorRampPalette(c("red", "yellow", "green"))(n = 299)
+     #col_breaks = c(seq(-1,0,length=100),  # for red
+                    #seq(0.01,0.8,length=100),           # for yellow
+                    #seq(0.81,1,length=100)) 
+     heatmap.2(as.matrix(t(happy[,2:25])), trace="none", Colv=NA, Rowv=NA, dendrogram="none", symm=FALSE, main="Location = Home",labCol = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"),
+               key.title = "Color Key"
+               
+               )
+     
    })
    
    output$lineGraph <- renderPlot({
